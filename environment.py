@@ -103,16 +103,3 @@ def vehicle_input(ego_state, sensor_range, obstacles, cell_size, env_border):
                         grid_out[lon_idx][lat_idx] = 1
 
     return grid_out, pointmat
-
-
-# gridmap_out, pointmat = vehicle_input(numpy.array([0.,0.,0.,-0.25*numpy.pi]),numpy.array([20.,20.]),[numpy.array([5.,-3.,0.,0.]),numpy.array([10.,-3.,0.,0.])],numpy.array([1,1]),[200,20])
-# print(gridmap_out)
-# print(pointmat)
-
-
-# plt.matshow(gridmap_out)
-# plt.grid()
-# plt.show()
-#
-# # a = pygame.Surface()
-# # pdb.set_trace()
