@@ -22,7 +22,7 @@ cell_size =  np.array([5,1])
 
 
 
-network_type = ['conv','conv','conv','fully','fully']
+network_type = ['conv','conv','conv','linear']
 network_spec = [ [1,30,3,'ReLU'],
                  [30,20,3,'ReLU'],
                  [20,10,2,'ReLU'],
@@ -48,7 +48,7 @@ if net_chk.is_file() is True:
         nets = pickle.load(net_restore)
 
 else:
-    nets = init_net(network_type, network_spec)
+    nets = net_module(network_type, network_spec)
 
 ##
 for epi_idx in range(max_epi):
