@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 
 def vehicle_input(ego_state, sensor_range, obstacles, cell_size, env_border):
 
-    # ego_state/obstacles : [x,y,velocity,angle]
-    # sensor_range : [longitudinal range, lateral range]
+    # ego_state/obstacles : numpy.array([x,y,velocity,angle])
+    # sensor_range : numpy.array([longitudinal range, lateral range])
 
     gridmap = sensor_range/cell_size
     grid_out = numpy.zeros(gridmap.astype(int).tolist())
@@ -103,3 +103,29 @@ def vehicle_input(ego_state, sensor_range, obstacles, cell_size, env_border):
                         grid_out[lon_idx][lat_idx] = 1
 
     return grid_out, pointmat
+
+
+def step(state,action,del_t,state_range):
+    # state = numpy.array([x,y,v,angle])
+    # action = numpy.array([accel, del_angle])
+    # del_t = time difference
+
+    velo = state[2]
+    angle = statep[3]
+
+    velo = velo + del_t*action[0]
+
+    if velo > state_range[0]:
+        velo = state_range[0]
+    if numpy.abs(angle) > numpy.pi/2.
+        angle = numpy.sign(angle)* numpy.pi/2.
+
+    angle = angle + del_t*action[1]
+
+    state[0] = state[0] + del_t*velo*numpy.cos(angle)
+    state[1] = state[1] + del_t * velo * numpy.sin(angle)
+    state[2] = velo
+    state[3] = angle
+
+
+    return state
