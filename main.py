@@ -58,11 +58,18 @@ else:
 ego_state = numpy.array([0.,0.,0.,0.])
 while bump == 0:
 
-
-
     veh_grid = vehicle_input(ego_state, grid_range, obstacles, cell_size, env_size)
-    ##################### action = neuralnet(grid state)
+    ##################### action = neuralnet(veh_grid)
     ##################### policy needed
 
     ego_state = step(ego_state, action, del_t, state_range)
-dd
+
+    ## obstacle vehicles' action
+    out_idx = []
+    for obsidx in len(obstacles):
+        obs_action = veh_model(obstacles[obsidx])
+        obstacles[obsidx] = step(obstacles[obsidx],obs_action, del_t, state_range)
+        if obstacles[obsidx][0] > env_size[0] or numpy.abs(obstacles[obsidx][1]) > env_size[1]/2:
+            out_idx.append(obsidx)
+
+    
