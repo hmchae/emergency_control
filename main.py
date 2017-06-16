@@ -66,10 +66,11 @@ while bump == 0:
 
     ## obstacle vehicles' action
     out_idx = []
-    for obsidx in len(obstacles):
+    for obsidx in range(len(obstacles)):
         obs_action = veh_model(obstacles[obsidx])
         obstacles[obsidx] = step(obstacles[obsidx],obs_action, del_t, state_range)
         if obstacles[obsidx][0] > env_size[0] or numpy.abs(obstacles[obsidx][1]) > env_size[1]/2:
-            out_idx.append(obsidx)
+            out_idx.append(obstacles[obsidx])
 
-    
+    for tmp in range(len(out_idx)):
+        obstacles.remove(out_idx[tmp])
