@@ -21,6 +21,8 @@ grid_range = np.array([ 100., 10. ])
 cell_size = np.array([5,1])
 
 max_vehicle = 20
+safety_radius = 1
+
 velo_range = numpy.array([10.,60.])/3.6
 del_t = 0.1
 
@@ -64,9 +66,8 @@ while bump == 0 or done == 0:
 
     ##################### action = neuralnet(veh_grid)
     ##################### policy needed
-
+    action = numpy.array([0.1, 0.0])
     ego_state = step(ego_state, action, del_t, state_range)
-    done = chk_done(ego_state)
 
     ## obstacle vehicles' action
     out_idx = []
@@ -78,6 +79,8 @@ while bump == 0 or done == 0:
 
     for tmp in range(len(out_idx)):
         obstacles.remove(out_idx[tmp])
+
+    done = chk_done(ego_state, obstacles, safety_radius, env_size)
 
     ############ reward and else
     ## [reward, done] = env_reward(ego_state, action, obstacles)

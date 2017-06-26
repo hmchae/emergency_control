@@ -147,7 +147,7 @@ def chk_done(ego_state, obstacles,safety_radius,env_boundary):
         done = 1
     else:
         done = 0
-        
+
         for idx in range(len(obstacles)) :
             if numpy.linalg.norm(ego_loc-obstacles[idx][0:2]) < safety_radius^2:
                 done = 1
