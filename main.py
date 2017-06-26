@@ -56,7 +56,7 @@ else:
 ### simulator
 
 ego_state = numpy.array([0.,0.,0.,0.])
-while bump == 0:
+while bump == 0 or done == 0∂:
 
     veh_grid = vehicle_input(ego_state, grid_range, obstacles, cell_size, env_size)
     ##################### action = neuralnet(veh_grid)
@@ -74,3 +74,7 @@ while bump == 0:
 
     for tmp in range(len(out_idx)):
         obstacles.remove(out_idx[tmp])
+
+    ############ reward and else
+    ## [reward, done] = env_reward(ego_state, action, obstacles)
+
