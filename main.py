@@ -6,7 +6,7 @@ import sys
 import matplotlib.pyplot as plt
 from pathlib import Path
 import pickle
-from  neural_net import *
+from neural_net import *
 
 max_epi = 100000
 
@@ -18,7 +18,7 @@ state_range = [[16.67,0.], [np.pi/4.,-np.pi/4.]] # state range  [max_vel, min_ve
 
 env_size = np.array([ 1000., 20. ])
 grid_range = np.array([ 100., 10. ])
-cell_size =  np.array([5,1])
+cell_size = np.array([5,1])
 
 max_vehicle = 20
 velo_range = numpy.array([10.,60.])/3.6
@@ -56,18 +56,22 @@ else:
 ### simulator
 
 ego_state = numpy.array([0.,0.,0.,0.])
-while bump == 0 or done == 0∂:
+obstacles = gen_obs(num_obs)
+
+while bump == 0 or done == 0:
 
     veh_grid = vehicle_input(ego_state, grid_range, obstacles, cell_size, env_size)
+
     ##################### action = neuralnet(veh_grid)
     ##################### policy needed
 
     ego_state = step(ego_state, action, del_t, state_range)
+    done = chk_done(ego_state)
 
     ## obstacle vehicles' action
     out_idx = []
     for obsidx in range(len(obstacles)):
-        obs_action = veh_model(obstacles[obsidx])
+        obs_action = surveh_model(obstacles[obsidx])
         obstacles[obsidx] = step(obstacles[obsidx],obs_action, del_t, state_range)
         if obstacles[obsidx][0] > env_size[0] or numpy.abs(obstacles[obsidx][1]) > env_size[1]/2:
             out_idx.append(obstacles[obsidx])

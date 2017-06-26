@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 def vehicle_input(ego_state, sensor_range, obstacles, cell_size, env_border):
 
-    # ego_state/obstacles : numpy.array([x,y,velocity,angle])
+    # ego_state/obstacles : [numpy.array([x,y,velocity,angle])]
     # sensor_range : numpy.array([longitudinal range, lateral range])
 
     gridmap = sensor_range/cell_size
@@ -129,3 +129,30 @@ def step(state,action,del_t,state_range):
 
 
     return state
+
+
+
+def surveh_model(state):
+    # state : [numpy.array([x,y,velocity,angle])]
+    acc = 0
+    angle = 0
+
+    output = numpy.array([acc,angle])
+    return output
+
+def chk_done(ego_state, obstacles,safety_radius,env_boundary):
+    ego_loc = ego_state[0:2]
+
+    if ego_loc[0] > env_boundary or numpy.abs(ego_loc[1]) > env_boundary/2 :
+        done = 1
+    else:
+        done = 0
+        
+        for idx in range(len(obstacles)) :
+            if numpy.linalg.norm(ego_loc-obstacles[idx][0:2]) < safety_radius^2:
+                done = 1
+
+
+
+
+
