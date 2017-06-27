@@ -117,8 +117,9 @@ def step(state,action,del_t,state_range):
 
     if velo > state_range[0][0]:
 		velo = state_range[0][0]
-    if numpy.abs(angle) > numpy.pi/2.:
-        angle = numpy.sign(angle)* numpy.pi/2.
+
+    if numpy.abs(angle) > state_range[1]:
+        angle = numpy.sign(angle)* state_range[1]
 
     angle = angle + del_t*action[1]
 
@@ -154,5 +155,20 @@ def chk_done(ego_state, obstacles,safety_radius,env_boundary):
 	return done
 
 
+class CarSprite(pygame.sprite.Sprite):
+    def __init__(self, image, position):
+        pygame.sprite.Sprite.__init__(self)
+        # self.src_image = pygame.image.load(image)
+        self.src_image = pygame.transform.scale(pygame.transform.flip(pygame.image.load(image), 0, 1), (30,50))
+        self.position = position
 
 
+    def update(self,position):
+        self.image = self.src_image
+        # self.speed = self.direction = 0
+
+        #
+        # self.position = (x, y)
+        # self.image = pygame.transform.rotate(self.src_image, self.direction)
+        self.rect = self.image.get_rect()
+        self.rect.center = position
