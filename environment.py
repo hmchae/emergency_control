@@ -111,13 +111,13 @@ def step(state,action,del_t,state_range):
     # del_t = time difference
 
     velo = state[2]
-    angle = statep[3]
+    angle = state[3]
 
     velo = velo + del_t*action[0]
 
-    if velo > state_range[0]:
-        velo = state_range[0]
-    if numpy.abs(angle) > numpy.pi/2.
+    if velo > state_range[0][0]:
+		velo = state_range[0][0]
+    if numpy.abs(angle) > numpy.pi/2.:
         angle = numpy.sign(angle)* numpy.pi/2.
 
     angle = angle + del_t*action[1]
@@ -143,7 +143,7 @@ def surveh_model(state):
 def chk_done(ego_state, obstacles,safety_radius,env_boundary):
     ego_loc = ego_state[0:2]
 
-    if ego_loc[0] > env_boundary or numpy.abs(ego_loc[1]) > env_boundary/2 :
+    if ego_loc[0] > env_boundary[0] or numpy.abs(ego_loc[1]) > env_boundary[1]/2 :
         done = 1
     else:
         done = 0
@@ -151,7 +151,7 @@ def chk_done(ego_state, obstacles,safety_radius,env_boundary):
         for idx in range(len(obstacles)) :
             if numpy.linalg.norm(ego_loc-obstacles[idx][0:2]) < safety_radius^2:
                 done = 1
-
+	return done
 
 
 

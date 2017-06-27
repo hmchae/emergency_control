@@ -42,6 +42,7 @@ network_spec = [ [1,30,3,'ReLU'],
 cur_dir = os.getcwd()
 net_fol = 'networks'
 cur_dir_chk = Path(cur_dir+net_fol)
+print 'aa'
 
 if cur_dir_chk.is_dir() is not True:
     os.mkdir(cur_dir+net_fol)
@@ -53,20 +54,45 @@ if net_chk.is_file() is True:
         nets = pickle.load(net_restore)
 
 else:
-    nets = net_module(network_type, network_spec)
+	a = 2    
+#nets = net_module(network_type, network_spec)
 
 ### simulator
+print 'a'
 
 ego_state = numpy.array([0.,0.,0.,0.])
-obstacles = gen_obs(num_obs)
+#obstacles = gen_obs(num_obs)
+obstacles = [numpy.array([70.5,2.5,0.,0.]),numpy.array([45.2,-2.5,0.,0.]),numpy.array([37.9,0.1,0.,0.])]
+done = 0
+bump = 0
+cnt = 0
 
-while bump == 0 or done == 0:
+# plt.show()
 
+fig= plt.figure()
+plt.ion()
+while bump == 0 and done == 0:
+
+
+    cnt += 1
     veh_grid = vehicle_input(ego_state, grid_range, obstacles, cell_size, env_size)
+    # plt.ion()
+
+    # plt.figure()
+    plt.matshow(veh_grid[0])
+
+
+    # plt.show()
+    # plt.close()
+    # plt.plot(ego_state)
+    # fig.canvas.draw()
+
+
+    # plt.close()
 
     ##################### action = neuralnet(veh_grid)
     ##################### policy needed
-    action = numpy.array([0.1, 0.0])
+    action = numpy.array([10., 0.0])
     ego_state = step(ego_state, action, del_t, state_range)
 
     ## obstacle vehicles' action
@@ -84,4 +110,5 @@ while bump == 0 or done == 0:
 
     ############ reward and else
     ## [reward, done] = env_reward(ego_state, action, obstacles)
-
+    if cnt is 100:
+        done =1

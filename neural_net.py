@@ -16,7 +16,8 @@ class net_module(nn.Module):
                 net_string += 'nn.Linear(network_spec[0],network_spec[1]),'
                 net_string += 'nn.'+ network_specp[-1] + ','
             elif layer_type  is 'conv':
+				a= 2
 
+	
 
         #self.model = torch.nn.Sequential()
-        return 0
