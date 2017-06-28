@@ -3,6 +3,7 @@ import numpy
 import math
 import pdb
 import matplotlib.pyplot as plt
+import random
 
 
 def vehicle_input(ego_state, sensor_range, obstacles, cell_size, env_border):
@@ -114,14 +115,14 @@ def step(state,action,del_t,state_range):
     angle = state[3]
 
     velo = velo + del_t*action[0]
+    angle = angle + del_t*action[1]
+
 
     if velo > state_range[0][0]:
-		velo = state_range[0][0]
+        velo = state_range[0][0]
 
     if numpy.abs(angle) > state_range[1]:
         angle = numpy.sign(angle)* state_range[1]
-
-    angle = angle + del_t*action[1]
 
     state[0] = state[0] + del_t*velo*numpy.cos(angle)
     state[1] = state[1] + del_t * velo * numpy.sin(angle)
@@ -135,7 +136,7 @@ def step(state,action,del_t,state_range):
 
 def surveh_model(state):
     # state : [numpy.array([x,y,velocity,angle])]
-    acc = 0
+    acc = 0.01 + 0.01*random.random()
     angle = 0
 
     output = numpy.array([acc,angle])
@@ -150,9 +151,13 @@ def chk_done(ego_state, obstacles,safety_radius,env_boundary):
         done = 0
 
         for idx in range(len(obstacles)) :
-            if numpy.linalg.norm(ego_loc-obstacles[idx][0:2]) < safety_radius^2:
+            if numpy.sqrt(numpy.linalg.norm(ego_loc-obstacles[idx][0:2])) < safety_radius:
                 done = 1
-	return done
+                pdb.set_trace()
+
+    # if done is 1:
+    #     pdb.set_trace()
+    return done
 
 
 class CarSprite(pygame.sprite.Sprite):
@@ -163,12 +168,24 @@ class CarSprite(pygame.sprite.Sprite):
         self.position = position
 
 
-    def update(self,position):
+    def update(self,position,angle):
         self.image = self.src_image
-        # self.speed = self.direction = 0
-
-        #
-        # self.position = (x, y)
-        # self.image = pygame.transform.rotate(self.src_image, self.direction)
+        self.image = pygame.transform.rotate(self.image, angle/numpy.pi*180)
         self.rect = self.image.get_rect()
         self.rect.center = position
+
+
+def init_obs(num_obs,env_size):
+    init_num = random.randrange(1,num_obs+1)
+    obstacles = []
+    print init_num
+    for idx in range(init_num):
+
+        if random.random() > 0.5:
+            obs = numpy.array([0.1,(random.random()-0.5)*env_size[1],0.,0.])
+        else:
+            obs = numpy.array([env_size[0]-0.1,(random.random()-0.5)*env_size[1],0.,numpy.pi])
+
+        obstacles.append(obs)
+
+    return obstacles
