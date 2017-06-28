@@ -1,2 +1,2 @@
 # emergency_control
-Deep reinforcement learning based autonomous vehicle control with occupancy grid map using pytorch
+Deep reinforcement learning based autonomous vehicle control via occupancy grid map using pytorch and pygame library
