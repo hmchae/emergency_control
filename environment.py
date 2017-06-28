@@ -161,10 +161,10 @@ def chk_done(ego_state, obstacles,safety_radius,env_boundary):
 
 
 class CarSprite(pygame.sprite.Sprite):
-    def __init__(self, image, position):
+    def __init__(self, image, position,env_res):
         pygame.sprite.Sprite.__init__(self)
         # self.src_image = pygame.image.load(image)
-        self.src_image = pygame.transform.scale(pygame.transform.flip(pygame.image.load(image), 0, 1), (30,50))
+        self.src_image = pygame.transform.scale(pygame.transform.flip(pygame.image.load(image), 0, 1), (int(numpy.ceil(10*env_res)*0.55),int(numpy.ceil(10*env_res))))
         self.position = position
 
 
@@ -178,13 +178,12 @@ class CarSprite(pygame.sprite.Sprite):
 def init_obs(num_obs,env_size):
     init_num = random.randrange(1,num_obs+1)
     obstacles = []
-    print init_num
     for idx in range(init_num):
 
         if random.random() > 0.5:
-            obs = numpy.array([0.1,(random.random()-0.5)*env_size[1],0.,0.])
+            obs = numpy.array([0.1,(random.random()-0.5)*env_size[1],random.random()*3.,0.])
         else:
-            obs = numpy.array([env_size[0]-0.1,(random.random()-0.5)*env_size[1],0.,numpy.pi])
+            obs = numpy.array([env_size[0]-0.1,(random.random()-0.5)*env_size[1],random.random()*3.,numpy.pi])
 
         obstacles.append(obs)
 

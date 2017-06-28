@@ -18,7 +18,7 @@ action_dim = 2 # steering, acceleration
 action_range = [[0.3*9.8,-9.8],[np.pi/40.,-np.pi/40.]] # action range [max_accel, max_decel], [max_angle_right, max_angle_left]
 state_range = [[16.67,0.], np.pi+0.1] # state range  [max_vel, min_vel], [max_angle, min_angle]
 
-env_size = np.array([ 1000., 200. ])
+env_size = np.array([ 300.,30. ])
 grid_range = np.array([ 100., 10. ])
 cell_size = np.array([5,1])
 
@@ -79,13 +79,13 @@ if vis_switch == 1:
     screen.blit(background, (0,0))
     clock = pygame.time.Clock()
     clock.tick(vis_FPS)
-    ego_veh_spr = CarSprite(cur_dir+'/images/car.png',int(env_size[0] - ego_state[0]))
+    ego_veh_spr = CarSprite(cur_dir+'/images/car.png',(int((ego_state[1] + env_size[1] / 2) / env_size[1] * ratio * scr_height), int((env_size[0] - ego_state[0]) / env_size[0] * scr_height)),scr_height/env_size[0])
     ego_veh_group = pygame.sprite.RenderPlain(ego_veh_spr)
     obs_group_list = []
 
 
     for obsidx in range(len(obstacles)):
-        obs_veh_spr = CarSprite(cur_dir+'/images/sur.png',(int((obstacles[obsidx][1] + env_size[1] / 2) / env_size[1] * ratio * scr_height), int((env_size[0] - obstacles[obsidx][0]) / env_size[0] * scr_height)))
+        obs_veh_spr = CarSprite(cur_dir+'/images/sur.png',(int((obstacles[obsidx][1] + env_size[1] / 2) / env_size[1] * ratio * scr_height), int((env_size[0] - obstacles[obsidx][0]) / env_size[0] * scr_height)),scr_height/env_size[0])
         obs_grp = pygame.sprite.RenderPlain(obs_veh_spr)
         obs_group_list.append(obs_grp)
 
@@ -94,17 +94,15 @@ while bump == 0 and done == 0:
 
 
     if len(obstacles) < num_obs and random.random() < 0.005:
-        print len(obstacles)
-        print obstacles
-        print obs_group_list
+
         if random.random() > 0.5:
-            obs = numpy.array([0.1,(random.random()-0.5)*env_size[1],0.,0.])
+            obs = numpy.array([0.1,(random.random()-0.5)*env_size[1],random.random()*3.,0.])
         else:
-            obs = numpy.array([env_size[0]-0.1,(random.random()-0.5)*env_size[1],0.,numpy.pi])
+            obs = numpy.array([env_size[0]-0.1,(random.random()-0.5)*env_size[1],random.random()*3.,numpy.pi])
 
         obstacles.append(obs)
         if vis_switch is 1:
-            obs_veh_spr = CarSprite(cur_dir + '/images/sur.png', (int((obstacles[-1][1] + env_size[1] / 2) / env_size[1] * ratio * scr_height), int((env_size[0] - obstacles[-1][0]) / env_size[0] * scr_height)))
+            obs_veh_spr = CarSprite(cur_dir + '/images/sur.png', (int((obstacles[-1][1] + env_size[1] / 2) / env_size[1] * ratio * scr_height), int((env_size[0] - obstacles[-1][0]) / env_size[0] * scr_height)),scr_height/env_size[0])
             obs_grp = pygame.sprite.RenderPlain(obs_veh_spr)
             obs_group_list.append(obs_grp)
 
