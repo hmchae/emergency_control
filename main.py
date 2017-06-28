@@ -75,7 +75,6 @@ ratio = env_size[0]/env_size[1]
 scr_width = 250
 
 if vis_switch == 1:
-    # screen = pygame.display.set_mode((int(env_size[1]),int(env_size[0])))
     screen = pygame.display.set_mode((scr_width,int(scr_width*ratio)))
     clock = pygame.time.Clock()
     clock.tick(vis_FPS)
