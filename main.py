@@ -110,6 +110,8 @@ sprite_group = pygame.sprite.RenderPlain()   #need to be checked
 
 # episode starts
 ego_state = numpy.array([0.1,0.1,0.,0.])
+action = numpy.array([0., 0.])
+reward = 0.
 obstacles,lane_vec = init_obs(num_obs,env_size,num_lane,lane_dir)
 done = 0
 bump = 0
@@ -177,13 +179,15 @@ while bump == 0 and done == 0 :
 
     ##################### action = RL(veh_grid)
     ##################### policy needed
+    replay_memory.push(prev_state, action, state, reward)
+
     action = numpy.array([0.01, 0.])
 
     ############ reward and else
     ## [reward, done] = env_reward(ego_state, action, obstacles)
     reward = 0
 
-    replay_memory.push(prev_state, action, state, reward)
+
 
     ##DDPG learning
 

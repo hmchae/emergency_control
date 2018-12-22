@@ -216,3 +216,7 @@ def init_obs(num_obs,env_size,num_lane,lane_dir):
         obstacles.append(obs)
 
     return obstacles,lane_vec
+
+
+
+

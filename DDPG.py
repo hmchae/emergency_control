@@ -34,3 +34,17 @@ class ReplayMemory(object):
 class DDPG(nn.Module):
     def __init__(self, nnStruct):
         super(DDPG,self).__init__()
+        nnStruct[0] = network_type
+        nnStruct[1] = network_spec
+
+        net_module = nn.ModuleList()
+        for idx, layer_type in enumerate(network_type):
+            if layer_type is 'linear':
+                net_module.append(nn.Linear(network_spec[0],network_spec[1]))
+
+            elif layer_type is 'conv':
+                net_module.append(nn.Conv2d(network_spec[0],network_spec[1],network_spec[2]))
+
+
+                # self.model = torch.nn.Sequential()
+
