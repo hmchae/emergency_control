@@ -16,23 +16,24 @@ test = False # True or false
 
 action_dim = 2 # steering, acceleration
 action_range = [[0.3*9.8,-9.8],[np.pi/40.,-np.pi/40.]] # action range [max_accel, max_decel], [max_angle_right, max_angle_left]
-state_range = [[16.67,0.], np.pi+0.1] # state range  [max_vel, min_vel], [max_angle, min_angle]
+steering_range = [[16.67,0.], np.pi+0.1] # state range  [max_vel, min_vel], [max_angle, min_angle]
 
 env_size = np.array([ 400.,30. ])
 grid_range = np.array([ 100., 10. ])
 cell_size = np.array([5,1])
 
 # max_vehicle = 50
-safety_radius = 0
+safety_radius = 0.5
 
-velo_range = numpy.array([10.,60.])/3.6
+
 del_t = 0.05
-num_obs = 30
-num_lane = 3
-# lane_dir = 2*(numpy.round(numpy.random.rand(num_lane))- 0.5)
-lane_dir = numpy.ones(num_lane)
+num_obs = 5
+num_lane = 5
+#lane_dir = 2*(numpy.round(numpy.random.rand(num_lane))- 0.5)
+lane_dir = -numpy.ones(num_lane)
 
 
+## network initialization
 network_type = ['conv','conv','conv','linear']
 network_spec = [ [1,30,3,'ReLU'],
                  [30,20,3,'ReLU'],
@@ -43,7 +44,7 @@ network_spec = [ [1,30,3,'ReLU'],
 
 
 
-## network initialization
+
 # set path
 cur_dir = os.getcwd()
 net_fol = '/networks'
@@ -59,8 +60,8 @@ if net_chk.is_file() is True:
         nets = pickle.load(net_restore)
 
 else:
-    a = 2
-#nets = net_module(network_type, network_spec)
+    dummy = 1
+    # nets = net_module(network_type, network_spec)
 
 ### simulator
 ego_state = numpy.array([0.1,0.1,0.,0.])
@@ -69,18 +70,21 @@ obstacles,lane_vec = init_obs(num_obs,env_size,num_lane,lane_dir)
 done = 0
 bump = 0
 
-vis_switch = 1
+
+vis_switch = 0
 vis_FPS =  int(1/del_t)
 
 ratio = env_size[1]/env_size[0]
 scr_height = 1024
 
+'''
 if vis_switch == 1:
     # screen = pygame.display.set_mode((scr_width,int(scr_width*ratio)))
+    screen = pygame.display.init()
+
     screen = pygame.display.set_mode((int(scr_height*ratio),scr_height))
     background = pygame.transform.scale(pygame.image.load((cur_dir+'/images/background.png')),(int(scr_height*ratio),scr_height))
     for lane_draw in range(num_lane)[0:num_lane-1]:
-        # pdb.set_trace()
         pygame.draw.line(background, (0,0,0), ((float(lane_draw)+1.)/float(num_lane)*ratio * scr_height,0),((float(lane_draw)+1.)/float(num_lane)*ratio * scr_height,scr_height), 5)
     screen.blit(background, (0,0))
 
@@ -96,19 +100,28 @@ if vis_switch == 1:
         obs_grp = pygame.sprite.RenderPlain(obs_veh_spr)
         obs_group_list.append(obs_grp)
 
-sprite_group = pygame.sprite.RenderPlain()
+sprite_group = pygame.sprite.RenderPlain()   #need to be checked
 
-while bump == 0 and done == 0:
+'''
+cur_step = 0
 
-    sprite_group.empty()
+# episode starts
+while bump == 0 and done == 0 :
+    cur_step += 1
 
-    if len(obstacles) < num_obs and random.random() < 0.1:
+    #sprite_group.empty()
+
+
+    if len(obstacles) < num_obs and random.random() < 1.:
+
+
         lane_idx = random.randrange(0,num_lane)
         dir = lane_dir[lane_idx]
         lane_vec.append(lane_idx)
         obs = numpy.array(
             [env_size[0] - (1. + dir) / 2 * env_size[0], ((1. + 2 * lane_idx) / (2 * num_lane) - 0.5) * env_size[1],
              random.random() * 10., (1. - dir) / 2 * numpy.pi])
+        #print(obs)
         # if random.random() > 0.5:
         #     # obs = numpy.array([0.1,(random.random()-0.5)*env_size[1],random.random()*3.,0.])
         #     obs = numpy.array([0.1, ((1.+2*lane_idx)/(2*num_lane) - 0.5) * env_size[1], random.random() * 3., (1.-dir)/2*numpy.pi])
@@ -117,16 +130,16 @@ while bump == 0 and done == 0:
         #     obs = numpy.array(
         #         [env_size[0] - 0.1, ((1.+2*lane_idx)/(2*num_lane) - 0.5) * env_size[1], random.random() * 3., (1.-dir)/2*numpy.pi])
         obstacles.append(obs)
-
+    '''
         if vis_switch is 1:
             obs_veh_spr = CarSprite(cur_dir + '/images/sur.png', (int((obstacles[-1][1] + env_size[1] / 2) / env_size[1] * ratio * scr_height), int((env_size[0] - obstacles[-1][0]) / env_size[0] * scr_height)),scr_height/env_size[0])
             obs_grp = pygame.sprite.RenderPlain(obs_veh_spr)
             obs_group_list.append(obs_grp)
             # obs_group_list.append(obs_veh_spr)
-
+    '''
     # print len(obstacles)
     veh_grid = vehicle_input(ego_state, grid_range, obstacles, cell_size, env_size)
-
+    '''
     if vis_switch == 1:
 
 
@@ -148,19 +161,24 @@ while bump == 0 and done == 0:
         sprite_group.clear(screen,background)
         sprite_group.draw(screen)
         pygame.display.flip()
-
+'''
 
     ##################### action = RL(veh_grid)
     ##################### policy needed
-    action = numpy.array([0.0, 0.])
-    ego_state = step(ego_state, action, del_t, state_range)
+    action = numpy.array([0.01, 0.])
+    ego_state = step(ego_state, action, del_t, state_range,1)
+    #print(ego_state)
+
 
     ## obstacle vehicles' action
     out_idx = []
-    obs_action, obstacles = surveh_model(obstacles,lane_vec)
+    obs_action, obstacles = surveh_model(obstacles,lane_vec,action[0])
     for obsidx in range(len(obstacles)):
         # obs_action = surveh_model(obstacles[obsidx])
-        obstacles[obsidx] = step(obstacles[obsidx],obs_action[obsidx], del_t, state_range)
+        obstacles[obsidx] = step(obstacles[obsidx],obs_action[obsidx], del_t, state_range,0)
+
+        if obstacles[obsidx][1] == 0.:
+            print(obstacles[obsidx])
 
         if obstacles[obsidx][0] > env_size[0] or numpy.abs(obstacles[obsidx][1]) > env_size[1]/2 or obstacles[obsidx][0] < 0 :
             out_idx.append(obsidx)
@@ -172,16 +190,20 @@ while bump == 0 and done == 0:
         obstacles.pop(idx)
         lane_vec.pop(idx)
         # dir_vec.pop(idx)
-
+        '''
         if vis_switch is 1:
             obs_grp = obs_group_list[idx]
             obs_grp.clear(screen, background)
             obs_grp.empty()
             obs_group_list.pop(idx)
+        '''
 
+    [done,bump] = chk_done(ego_state, obstacles, safety_radius, env_size)
+    if done == 1:
+        print("episode " + str(cur_step) + " ended")
+        print(ego_state)
+        print(bump)
 
-    done = chk_done(ego_state, obstacles, safety_radius, env_size)
-    # print done
 
 
     ############ reward and else
