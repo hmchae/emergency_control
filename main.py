@@ -1,6 +1,13 @@
 import numpy as np
+
 import torch as th
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F
+import torchvision.transforms as T
+
 from environment import *
+from DDPG import *
 import os
 import sys
 import pygame
@@ -41,7 +48,10 @@ network_spec = [ [1,30,3,'ReLU'],
                  [500, 'ReLU'],
                  [100,'ReLU'],
                  [action_dim,'None']]
+nnStruct = [network_type,network_spec]
 
+rmcap = 10000
+replay_memory = ReplayMemory(rmcap)
 
 
 
@@ -63,21 +73,15 @@ else:
     dummy = 1
     # nets = net_module(network_type, network_spec)
 
-### simulator
-ego_state = numpy.array([0.1,0.1,0.,0.])
-obstacles,lane_vec = init_obs(num_obs,env_size,num_lane,lane_dir)
 
-done = 0
-bump = 0
 
+'''
 
 vis_switch = 0
 vis_FPS =  int(1/del_t)
 
 ratio = env_size[1]/env_size[0]
 scr_height = 1024
-
-'''
 if vis_switch == 1:
     # screen = pygame.display.set_mode((scr_width,int(scr_width*ratio)))
     screen = pygame.display.init()
@@ -103,14 +107,18 @@ if vis_switch == 1:
 sprite_group = pygame.sprite.RenderPlain()   #need to be checked
 
 '''
-cur_step = 0
 
 # episode starts
+ego_state = numpy.array([0.1,0.1,0.,0.])
+obstacles,lane_vec = init_obs(num_obs,env_size,num_lane,lane_dir)
+done = 0
+bump = 0
+cur_step = 0
+veh_grid = numpy.zeros(gridmap.astype(int).tolist())
 while bump == 0 and done == 0 :
     cur_step += 1
 
     #sprite_group.empty()
-
 
     if len(obstacles) < num_obs and random.random() < 1.:
 
@@ -137,8 +145,12 @@ while bump == 0 and done == 0 :
             obs_group_list.append(obs_grp)
             # obs_group_list.append(obs_veh_spr)
     '''
-    # print len(obstacles)
-    veh_grid = vehicle_input(ego_state, grid_range, obstacles, cell_size, env_size)
+
+    prev_state = veh_grid
+    veh_grid = vehicle_input(ego_state, grid_range, obstacles, cell_size, env_size) # gonna be input to the network(state)
+    state = veh_grid
+
+
     '''
     if vis_switch == 1:
 
@@ -166,15 +178,26 @@ while bump == 0 and done == 0 :
     ##################### action = RL(veh_grid)
     ##################### policy needed
     action = numpy.array([0.01, 0.])
+
+    ############ reward and else
+    ## [reward, done] = env_reward(ego_state, action, obstacles)
+    reward = 0
+
+    replay_memory.push(prev_state, action, state, reward)
+
+    ##DDPG learning
+
+    [done, bump] = chk_done(ego_state, obstacles, safety_radius, env_size)
+    if done == 1:
+        print("episode ended at step" + int(cur_step))
+        break
+
+    ## ego vehicle's state update
     ego_state = step(ego_state, action, del_t, state_range,1)
-    #print(ego_state)
-
-
     ## obstacle vehicles' action
     out_idx = []
     obs_action, obstacles = surveh_model(obstacles,lane_vec,action[0])
     for obsidx in range(len(obstacles)):
-        # obs_action = surveh_model(obstacles[obsidx])
         obstacles[obsidx] = step(obstacles[obsidx],obs_action[obsidx], del_t, state_range,0)
 
         if obstacles[obsidx][1] == 0.:
@@ -189,7 +212,6 @@ while bump == 0 and done == 0 :
         idx = reversed_idx[tmp]
         obstacles.pop(idx)
         lane_vec.pop(idx)
-        # dir_vec.pop(idx)
         '''
         if vis_switch is 1:
             obs_grp = obs_group_list[idx]
@@ -198,15 +220,10 @@ while bump == 0 and done == 0 :
             obs_group_list.pop(idx)
         '''
 
-    [done,bump] = chk_done(ego_state, obstacles, safety_radius, env_size)
-    if done == 1:
-        print("episode " + str(cur_step) + " ended")
-        print(ego_state)
-        print(bump)
 
 
 
-    ############ reward and else
-    ## [reward, done] = env_reward(ego_state, action, obstacles)
+
+
     # if cnt is 1000:
     #     done =1
