@@ -12,7 +12,7 @@ from pygame.locals import *
 
 max_epi = 100000
 
-test = False # True or false
+test = False # True or false lg
 
 action_dim = 2 # steering, acceleration
 action_range = [[0.3*9.8,-9.8],[np.pi/40.,-np.pi/40.]] # action range [max_accel, max_decel], [max_angle_right, max_angle_left]
