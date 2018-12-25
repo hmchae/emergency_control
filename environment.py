@@ -40,7 +40,7 @@ def vehicle_input(ego_state, sensor_range, obstacles, cell_size, env_border):
         if js_angle < numpy.pi/2 and obj2obs*math.sin(js_angle) < sensor_range[1]/2 and obj2obs*math.cos(js_angle) < sensor_range[0] :
             loc_x = obj2obs*math.cos(js_angle)
             loc_y = obj2obs*math.sin(js_angle)
-            # pdb.set_trace()
+
             if numpy.linalg.norm(obs_state[0:2]-lb_point) > numpy.linalg.norm(obs_state[0:2]-rb_point):
                 dir = 1
             else:
@@ -49,19 +49,17 @@ def vehicle_input(ego_state, sensor_range, obstacles, cell_size, env_border):
             loc_y = loc_y*dir
             loc_tmp = numpy.floor(numpy.array([loc_x,loc_y])/numpy.array(cell_size)*numpy.array([-1.,1.])) + numpy.array([gridmap[0],numpy.ceil(gridmap[1]/2)])
             grid_loc = loc_tmp.astype(int).tolist()
-            # pdb.set_trace()
+
             grid_out[grid_loc[0]][grid_loc[1]] = 1
 
-    # pdb.set_trace()
+
     b_point = numpy.tile(lb_point,[gridmap[0].astype(int)+1,1]) + numpy.linspace(0., 1., gridmap[0].astype(int)+1).reshape([gridmap[0].astype(int)+1,1])*(lt_point-lb_point)
     gap = numpy.linspace(0., 1., gridmap[1]+1).reshape([gridmap[1].astype(int)+1, 1]) * (rb_point - lb_point)
-    # point_mat = numpy.array([])
 
     for tmp in range(numpy.shape(b_point)[0]):
 
         if tmp == 0:
             pointmat = b_point[tmp, :] + gap
-            # pointmat = pointmat[::-1]
         else:
             pointmat_tmp =  b_point[tmp, :] + gap
             pointmat = numpy.concatenate((pointmat_tmp,pointmat), axis=0)
@@ -145,24 +143,19 @@ def surveh_model(obstacles,lane_vec,ego_action):
         for obs_idx in indices:
             if obstacles[idx][-1] == 0:
                 if (obstacles[idx][0]  != obstacles[obs_idx][0])  and (0. > obstacles[idx][0] - obstacles[obs_idx][0] > -10.) :
-                    # obstacles[idx][2] = obstacles[obs_idx][2]
                     obstacles[idx][0] = obstacles[obs_idx][0]-10.
                     obs_action.append(numpy.array([-ego_action,0.0]))
 
                 else:
                     obs_action.append(numpy.array([0.05*random.random()-ego_action, 0.0]))
-                    # obs_action.append(numpy.array([0., 0.0]))
 
             else:
-                # pdb.set_trace()
                 if (obstacles[idx][0]  != obstacles[obs_idx][0])  and (0. < obstacles[idx][0] - obstacles[obs_idx][0] < 10.) :
-                    # obstacles[idx][2] = obstacles[obs_idx][2]
                     obstacles[idx][0] = obstacles[obs_idx][0] + 10.
                     obs_action.append(numpy.array([ego_action,0.0]))
 
                 else:
                     obs_action.append(numpy.array([0.00*random.random()+ego_action, 0.0]))
-                    # obs_action.append(numpy.array([0., 0.0]))
 
     return obs_action, obstacles
 
