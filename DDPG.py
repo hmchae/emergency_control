@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torchvision.transforms as T
+import numpy as np
 
 
 Transition = namedtuple(Transition, ('state', 'action','next_state','reward' ))
@@ -32,19 +33,27 @@ class ReplayMemory(object):
 
 
 class DDPG(nn.Module):
-    def __init__(self, nnStruct):
-        super(DDPG,self).__init__()
-        nnStruct[0] = network_type
-        nnStruct[1] = network_spec
 
-        net_module = nn.ModuleList()
-        for idx, layer_type in enumerate(network_type):
-            if layer_type is 'linear':
-                net_module.append(nn.Linear(network_spec[0],network_spec[1]))
+    def __init__(self, h, w):
+        super(DQN, self).__init__()
+        self.conv1 = nn.Conv2d(1, 30, kernel_size=3)
+        self.bn1 = nn.BatchNorm2d(30)
+        self.conv2 = nn.Conv2d(30, 20, kernel_size=3)
+        self.bn2 = nn.BatchNorm2d(20)
+        self.conv3 = nn.Conv2d(20, 10, kernel_size=2)
+        self.bn3 = nn.BatchNorm2d(10)
 
-            elif layer_type is 'conv':
-                net_module.append(nn.Conv2d(network_spec[0],network_spec[1],network_spec[2]))
+        def conv2d_size_out(size, kernel_size):
+            return (size - (kernel_size - 1) - 1) + 1
 
+        convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(w,3),3),2)
+        convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(h,3),3),2)
+        linear_input_size = convw * convh * 10
+        self.head = nn.Linear(linear_input_size, 2) # 448 or 512
 
-                # self.model = torch.nn.Sequential()
+    def forward(self, x):
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = F.relu(self.bn2(self.conv2(x)))
+        x = F.relu(self.bn3(self.conv3(x)))
 
+        return self.head(x.view(x.size(0), -1))

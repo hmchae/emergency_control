@@ -41,15 +41,6 @@ lane_dir = -numpy.ones(num_lane)
 
 
 ## network initialization
-network_type = ['conv','conv','conv','linear']
-network_spec = [ [1,30,3,'ReLU'],
-                 [30,20,3,'ReLU'],
-                 [20,10,2,'ReLU'],
-                 [500, 'ReLU'],
-                 [100,'ReLU'],
-                 [action_dim,'None']]
-nnStruct = [network_type,network_spec]
-
 rmcap = 10000
 replay_memory = ReplayMemory(rmcap)
 
