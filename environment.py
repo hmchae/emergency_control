@@ -164,17 +164,17 @@ def chk_done(ego_state, obstacles,safety_radius,env_boundary):
 
     if ego_loc[0] > env_boundary[0] or numpy.abs(ego_loc[1]) > env_boundary[1]/2 :
         done = 1
-        bump =0
+        reward =0
     else:
         done = 0
-        bump = 0
+        reward = 0
 
         for idx in range(len(obstacles)) :
             if numpy.sqrt(numpy.linalg.norm(ego_loc-obstacles[idx][0:2])) < safety_radius:
                 done = 1
-                bump = 1
+                reward = -ego_state[2]/10.
 
-    return done, bump
+    return done, reward
 
 
 class CarSprite(pygame.sprite.Sprite):
