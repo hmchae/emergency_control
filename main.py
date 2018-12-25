@@ -14,7 +14,6 @@ import pygame
 import matplotlib.pyplot as plt
 from pathlib import Path
 import pickle
-from neural_net import *
 from pygame.locals import *
 
 max_epi = 100000
@@ -61,9 +60,8 @@ if net_chk.is_file() is True:
         nets = pickle.load(net_restore)
 
 else:
-    dummy = 1
-    # nets = net_module(network_type, network_spec)
-
+    #nets = net_module(network_type, network_spec)
+    dummy = 0
 
 
 '''
@@ -113,7 +111,7 @@ while bump == 0 and done == 0 :
 
     #sprite_group.empty()
 
-    if len(obstacles) < num_obs and random.random() < 1.:
+    if len(obstacles) < num_obs and random.random() < 0.1:
 
 
         lane_idx = random.randrange(0,num_lane)

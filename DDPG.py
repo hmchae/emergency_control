@@ -44,7 +44,7 @@ class DDPG(nn.Module):
         self.bn3 = nn.BatchNorm2d(10)
 
         def conv2d_size_out(size, kernel_size):
-            return (size - (kernel_size - 1) - 1) + 1
+            return size - (kernel_size - 1)
 
         convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(w,3),3),2)
         convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(h,3),3),2)
