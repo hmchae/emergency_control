@@ -105,7 +105,7 @@ obstacles,lane_vec = init_obs(num_obs,env_size,num_lane,lane_dir)
 done = 0
 bump = 0
 cur_step = 0
-veh_grid = numpy.zeros(gridmap.astype(int).tolist())
+veh_grid = numpy.zeros(np.divide(grid_range,cell_size).astype(int).tolist())
 while bump == 0 and done == 0 :
     cur_step += 1
 
@@ -182,16 +182,16 @@ while bump == 0 and done == 0 :
 
     [done, bump] = chk_done(ego_state, obstacles, safety_radius, env_size)
     if done == 1:
-        print("episode ended at step" + int(cur_step))
+        print("episode ended at step " + str(cur_step))
         break
 
     ## ego vehicle's state update
-    ego_state = step(ego_state, action, del_t, state_range,1)
+    ego_state = step(ego_state, action, del_t, steering_range,1)
     ## obstacle vehicles' action
     out_idx = []
     obs_action, obstacles = surveh_model(obstacles,lane_vec,action[0])
     for obsidx in range(len(obstacles)):
-        obstacles[obsidx] = step(obstacles[obsidx],obs_action[obsidx], del_t, state_range,0)
+        obstacles[obsidx] = step(obstacles[obsidx],obs_action[obsidx], del_t, steering_range,0)
 
         if obstacles[obsidx][1] == 0.:
             print(obstacles[obsidx])

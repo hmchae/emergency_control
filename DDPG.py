@@ -9,7 +9,7 @@ import torchvision.transforms as T
 import numpy as np
 
 
-Transition = namedtuple(Transition, ('state', 'action','next_state','reward' ))
+Transition = namedtuple('Transition', ('state', 'action','next_state','reward' ))
 
 class ReplayMemory(object):
 
@@ -49,7 +49,7 @@ class DDPG(nn.Module):
         convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(w,3),3),2)
         convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(h,3),3),2)
         linear_input_size = convw * convh * 10
-        self.head = nn.Linear(linear_input_size, 2) # 448 or 512
+        self.head = nn.Linear(linear_input_size, 2)
 
     def forward(self, x):
         x = F.relu(self.bn1(self.conv1(x)))
