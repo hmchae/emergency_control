@@ -40,7 +40,7 @@ def vehicle_input(ego_state, sensor_range, obstacles, cell_size, env_border):
         if js_angle < numpy.pi/2 and obj2obs*math.sin(js_angle) < sensor_range[1]/2 and obj2obs*math.cos(js_angle) < sensor_range[0] :
             loc_x = obj2obs*math.cos(js_angle)
             loc_y = obj2obs*math.sin(js_angle)
-            # pdb.set_trace()
+
             if numpy.linalg.norm(obs_state[0:2]-lb_point) > numpy.linalg.norm(obs_state[0:2]-rb_point):
                 dir = 1
             else:
@@ -49,19 +49,17 @@ def vehicle_input(ego_state, sensor_range, obstacles, cell_size, env_border):
             loc_y = loc_y*dir
             loc_tmp = numpy.floor(numpy.array([loc_x,loc_y])/numpy.array(cell_size)*numpy.array([-1.,1.])) + numpy.array([gridmap[0],numpy.ceil(gridmap[1]/2)])
             grid_loc = loc_tmp.astype(int).tolist()
-            # pdb.set_trace()
+
             grid_out[grid_loc[0]][grid_loc[1]] = 1
 
-    # pdb.set_trace()
+
     b_point = numpy.tile(lb_point,[gridmap[0].astype(int)+1,1]) + numpy.linspace(0., 1., gridmap[0].astype(int)+1).reshape([gridmap[0].astype(int)+1,1])*(lt_point-lb_point)
     gap = numpy.linspace(0., 1., gridmap[1]+1).reshape([gridmap[1].astype(int)+1, 1]) * (rb_point - lb_point)
-    # point_mat = numpy.array([])
 
     for tmp in range(numpy.shape(b_point)[0]):
 
         if tmp == 0:
             pointmat = b_point[tmp, :] + gap
-            # pointmat = pointmat[::-1]
         else:
             pointmat_tmp =  b_point[tmp, :] + gap
             pointmat = numpy.concatenate((pointmat_tmp,pointmat), axis=0)
@@ -106,7 +104,7 @@ def vehicle_input(ego_state, sensor_range, obstacles, cell_size, env_border):
     return grid_out, pointmat
 
 
-def step(state,action,del_t,state_range):
+def step(state,action,del_t,state_range,ego_idx):
     # state = numpy.array([x,y,v,angle])
     # action = numpy.array([accel, del_angle])
     # del_t = time difference
@@ -126,7 +124,7 @@ def step(state,action,del_t,state_range):
     if numpy.abs(angle) > state_range[1]:
         angle = numpy.sign(angle)* state_range[1]
 
-    state[0] = state[0] + del_t*velo*numpy.cos(angle)
+    state[0] = state[0] + (del_t * velo * numpy.cos(angle))*(1-ego_idx)
     state[1] = state[1] + del_t * velo * numpy.sin(angle)
     state[2] = velo
     state[3] = angle
@@ -136,33 +134,28 @@ def step(state,action,del_t,state_range):
 
 
 
-def surveh_model(obstacles,lane_vec):
+def surveh_model(obstacles,lane_vec,ego_action):
     # state : [numpy.array([x,y,velocity,angle])]
     obs_action = []
     for idx in range(len(obstacles)):
         indices = [i for i,j in enumerate(lane_vec) if lane_vec[idx] == j]
         # pdb.set_trace()
         for obs_idx in indices:
-            if obstacles[idx][-1] == 0.:
+            if obstacles[idx][-1] == 0:
                 if (obstacles[idx][0]  != obstacles[obs_idx][0])  and (0. > obstacles[idx][0] - obstacles[obs_idx][0] > -10.) :
-                    # obstacles[idx][2] = obstacles[obs_idx][2]
                     obstacles[idx][0] = obstacles[obs_idx][0]-10.
-                    obs_action.append(numpy.array([0.,0.0]))
+                    obs_action.append(numpy.array([-ego_action,0.0]))
 
                 else:
-                    obs_action.append(numpy.array([0.05*random.random(), 0.0]))
-                    # obs_action.append(numpy.array([0., 0.0]))
+                    obs_action.append(numpy.array([0.05*random.random()-ego_action, 0.0]))
 
             else:
-                # pdb.set_trace()
                 if (obstacles[idx][0]  != obstacles[obs_idx][0])  and (0. < obstacles[idx][0] - obstacles[obs_idx][0] < 10.) :
-                    # obstacles[idx][2] = obstacles[obs_idx][2]
                     obstacles[idx][0] = obstacles[obs_idx][0] + 10.
-                    obs_action.append(numpy.array([0.,0.0]))
+                    obs_action.append(numpy.array([ego_action,0.0]))
 
                 else:
-                    obs_action.append(numpy.array([0.05*random.random(), 0.0]))
-                    # obs_action.append(numpy.array([0., 0.0]))
+                    obs_action.append(numpy.array([0.00*random.random()+ego_action, 0.0]))
 
     return obs_action, obstacles
 
@@ -171,23 +164,22 @@ def chk_done(ego_state, obstacles,safety_radius,env_boundary):
 
     if ego_loc[0] > env_boundary[0] or numpy.abs(ego_loc[1]) > env_boundary[1]/2 :
         done = 1
+        reward =0
     else:
         done = 0
+        reward = 0
 
         for idx in range(len(obstacles)) :
             if numpy.sqrt(numpy.linalg.norm(ego_loc-obstacles[idx][0:2])) < safety_radius:
                 done = 1
-                # pdb.set_trace()
+                reward = -ego_state[2]/10.
 
-    # if done is 1:
-    #     pdb.set_trace()
-    return done
+    return done, reward
 
 
 class CarSprite(pygame.sprite.Sprite):
     def __init__(self, image, position,env_res):
         pygame.sprite.Sprite.__init__(self)
-        # self.src_image = pygame.image.load(image)
         self.src_image = pygame.transform.scale(pygame.transform.flip(pygame.image.load(image), 0, 1), (int(numpy.ceil(10*env_res)*0.55),int(numpy.ceil(10*env_res))))
         self.position = position
 
@@ -213,11 +205,11 @@ def init_obs(num_obs,env_size,num_lane,lane_dir):
         obs = numpy.array(
             [env_size[0]+random.random() - (1. + dir) / 2 * env_size[0], ((1. + 2 * lane_idx) / (2 * num_lane) - 0.5) * env_size[1],
             10.+ random.random() * 10., (1. - dir) / 2 * numpy.pi])
-        # if random.random() > 0.5:
-        #     obs = numpy.array([env_size[0]- (1.-dir)/2*env_size[0],((1.+2*lane_idx)/(2*num_lane) - 0.5) * env_size[1],random.random()*3.,(1.-dir)/2*numpy.pi])
-        # else:
-        #     obs = numpy.array([env_size[0]-0.1,((1.+2*lane_idx)/(2*num_lane) - 0.5) * env_size[1],random.random()*3.,(1.-dir)/2*numpy.pi])
 
         obstacles.append(obs)
 
     return obstacles,lane_vec
+
+
+
+
